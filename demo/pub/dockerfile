@@ -1,0 +1,30 @@
+# Build
+FROM golang:1.19-alpine AS build
+
+WORKDIR /app
+
+COPY go.mod ./
+COPY go.sum ./
+
+RUN go mod download
+
+COPY ./ ./
+
+RUN go build -o /app/publisher.exe ./demo/pub/main.go
+
+# Deploy
+FROM alpine
+
+WORKDIR /app
+
+COPY --from=build /app/publisher.exe ./publisher.exe
+
+EXPOSE 6658
+EXPOSE 6420
+EXPOSE 5060
+
+RUN chmod +x publisher.exe
+
+RUN apk add bash
+
+CMD [ "./publisher.exe" ]

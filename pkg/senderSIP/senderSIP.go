@@ -1,7 +1,6 @@
 package SenderSIP
 
 import (
-	"fmt"
 	"net"
 	"os"
 	"strconv"
@@ -27,7 +26,7 @@ func init() {
 }
 
 type SenderSIP struct {
-	UDPAddr net.UDPAddr
+	UDPAddress *net.UDPAddr
 
 	UA    *ua.UserAgent
 	Stack *stack.SipStack
@@ -36,15 +35,17 @@ type SenderSIP struct {
 	targetChan chan string
 	Recipient  sip.SipUri
 
-	Profile *account.Profile
+	Profile  *account.Profile
+	Register *ua.Register
 }
 
 func NewSenderSIPclient() (s *SenderSIP) {
-	senderIP, ok := os.LookupEnv("SENDER_IP")
+	s = &SenderSIP{}
+	senderIPstr, ok := os.LookupEnv("SENDER_IP")
 	if !ok {
 		logger.Error("senderIP param not found")
 	}
-	senderPortStr, ok := os.LookupEnv("sender_PORT")
+	senderPortStr, ok := os.LookupEnv("SENDER_PORT")
 	if !ok {
 		logger.Error("senderPort param not found")
 	}
@@ -53,17 +54,18 @@ func NewSenderSIPclient() (s *SenderSIP) {
 		logger.Error(err)
 	}
 
-	localName, ok := os.LookupEnv("LOCAL_NAME")
+	senderName, ok := os.LookupEnv("SENDER_NAME")
 	if !ok {
 		logger.Error("localName param not found")
 	}
 
-	s.UDPAddr = net.UDPAddr{
-		IP:   net.IP(senderIP),
-		Port: senderPort,
+	service := senderIPstr + ":" + senderPortStr
+	s.UDPAddress, err = net.ResolveUDPAddr("udp", service)
+	if err != nil {
+		logger.Error(err)
 	}
 
-	localIPAddr := fmt.Sprint(senderIP) + ":" + fmt.Sprint(senderPortStr)
+	localIPAddr := senderIPstr + ":" + senderPortStr
 	logger.Infof("listen to %s", localIPAddr)
 
 	s.Stack = stack.NewSipStack(&stack.SipStackConfig{
@@ -71,7 +73,7 @@ func NewSenderSIPclient() (s *SenderSIP) {
 		Extensions: []string{"replaces", "outbound"},
 		Dns:        "8.8.8.8"})
 	if err := s.Stack.Listen("udp", localIPAddr); err != nil {
-		logger.Panic(err)
+		logger.Error(err)
 	}
 
 	s.UA = ua.NewUserAgent(&ua.UserAgentConfig{
@@ -86,7 +88,7 @@ func NewSenderSIPclient() (s *SenderSIP) {
 		switch state {
 		case session.InviteReceived:
 
-			sdp := mock.BuildLocalSdp(senderIP, senderPort)
+			sdp := mock.BuildLocalSdp(senderIPstr, senderPort)
 			logger.Infof("Received INVITE")
 			sess.ProvideAnswer(sdp)
 			sess.Accept(200)
@@ -117,7 +119,7 @@ func NewSenderSIPclient() (s *SenderSIP) {
 	}
 
 	// UAC uri
-	uriString := "sip:" + localName + "@" + s.UDPAddr.String()
+	uriString := "sip:" + senderName + "@" + s.UDPAddress.String()
 	senderUri, err := parser.ParseUri(uriString)
 	if err != nil {
 		logger.Error(err)
@@ -143,7 +145,7 @@ func NewSenderSIPclient() (s *SenderSIP) {
 		logger.Error("serverPort param not found")
 	}
 	sipUriString := "sip" + ":" +
-		localName + "@" + serverIP + ":" +
+		senderName + "@" + serverIP + ":" +
 		serverPort + ";" +
 		"transport=udp"
 	s.Recipient, err = parser.ParseSipUri(sipUriString)
@@ -151,5 +153,10 @@ func NewSenderSIPclient() (s *SenderSIP) {
 		logger.Error(err)
 	}
 
+	return s
+}
+
+func (s *SenderSIP) SendRegister() (err error) {
+	s.Register, err = s.UA.SendRegister(s.Profile, s.Recipient, s.Profile.Expires, nil)
 	return
 }

@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  publisher:
+    image: pub:latest
+    container_name: publisher
+    environment:
+      - PUBLISHER_RTP_PORT
+      - PUBLISHER_SIP_PORT
+      - FORWARDER_RTP_IN_PORT
+      - FORWARDER_IP
+      - PUBLISHER_IP
+      - SERVER_SIP_IP
+      - SERVER_SIP_PORT
+      - SERVER_IP=$SERVER_SIP_IP
+      - SERVER_PORT=$SERVER_SIP_PORT
+      - SENDER_IP=$PUBLISHER_IP
+      - SENDER_PORT=$PUBLISHER_SIP_PORT
+      - SENDER_NAME=$PUBLISHER_NAME
+    ports:
+      - "${PUBLISHER_RTP_PORT}:${PUBLISHER_RTP_PORT}/udp"
+      - "${PUBLISHER_SIP_PORT}:${PUBLISHER_SIP_PORT}"
+      - 6658:6658
+    networks:
+      pubsubnet:
+        ipv4_address: ${PUBLISHER_IP}
+    stdin_open: true
+    tty: true
+
+
+networks:
+  pubsubnet:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: ${SUBNET}
+          gateway: ${GATEWAY}

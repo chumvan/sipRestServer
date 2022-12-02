@@ -5,9 +5,12 @@ import (
 )
 
 type Publisher struct {
-	SIP SenderSIP.SenderSIP
+	SIP *SenderSIP.SenderSIP
 }
 
-func NewPublisher(p *Publisher) {
-	p.SIP = *SenderSIP.NewSenderSIPclient()
+func NewPublisher() *Publisher {
+	p := &Publisher{
+		SIP: SenderSIP.NewSenderSIPclient(),
+	}
+	return p
 }
