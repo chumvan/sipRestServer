@@ -21,6 +21,7 @@ type ConfFactory struct {
 	UDPAddress *net.UDPAddr
 	Stack      *stack.SipStack
 	UA         *ua.UserAgent
+	ChanTopic  chan string
 }
 
 var (
@@ -93,9 +94,17 @@ func NewConfFactory() *ConfFactory {
 			if err != nil {
 				logger.Error(err)
 			}
+
 			topicName := tempSessDesc.Attributes.Get("topic")
+			cf.ChanTopic <- topicName
+
 			confUri := fmt.Sprintf("sip:%s@%s:%d;transport=udp", topicName, factoryIP, factoryPort)
-			tempSessDesc.Attributes = append(tempSessDesc.Attributes, sdp.NewAttr("confUri", confUri))
+			forwarderIP := os.Getenv("FORWARDER_IP")
+			forwarderRtpInPort := os.Getenv("FORWARDER_RTP_IN_PORT")
+			tempSessDesc.Attributes = append(tempSessDesc.Attributes,
+				sdp.NewAttr("confUri", confUri),
+				sdp.NewAttr("topicIP", forwarderIP),
+				sdp.NewAttr("topicPort", forwarderRtpInPort))
 			answer := tempSessDesc.String()
 			sess.ProvideAnswer(answer)
 			sess.Accept(200)

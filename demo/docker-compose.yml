@@ -37,6 +37,8 @@ services:
       - SERVER_SIP_PORT
       - CONF_FACTORY_PORT
       - CLIENT_REST_PORT
+      - FORWARDER_IP
+      - FORWARDER_RTP_IN_PORT
     ports:
       - "${CONF_FACTORY_PORT}:${CONF_FACTORY_PORT}"
       - "${SERVER_SIP_PORT}:${SERVER_SIP_PORT}"

@@ -101,11 +101,11 @@ func NewSenderSIPclient(useFor string) (s *SenderSIP) {
 		case session.InviteReceived:
 
 			sdp := mock.BuildLocalSdp(senderIPstr, senderPort)
-			logger.Infof("Received INVITE")
+			logger.Infof("received INVITE")
 			sess.ProvideAnswer(sdp)
 			sess.Accept(200)
 		case session.Confirmed:
-			logger.Infof("Confirmed INVITE")
+			logger.Infof("confirmed INVITE")
 			localSdp := sess.RemoteSdp()
 			sessionDesc := &sdp.SessionDescription{}
 			err := sessionDesc.Unmarshal(localSdp)
@@ -113,9 +113,19 @@ func NewSenderSIPclient(useFor string) (s *SenderSIP) {
 				logger.Error(err)
 			}
 			s.targetIP = sessionDesc.Origin.UnicastAddress
-			logger.Infof("receiverIP = %s", s.targetIP)
-			// Signaling is done, go for data transferring
+			logger.Infof("targetIP = %s", s.targetIP)
+			// pass the target's (forwarder's) IP for data transferring
 			s.targetChan <- s.targetIP
+
+			confUri, _ := sessionDesc.Attribute("confUri")
+			topicIP, _ := sessionDesc.Attribute("topicIP")
+			topicPort, _ := sessionDesc.Attribute("topicPort")
+			logger.Infof(`conference uri: %s
+						topicIP: %s
+						topicPort: %s`,
+				confUri,
+				topicIP,
+				topicPort)
 
 		case session.Canceled:
 			fallthrough
