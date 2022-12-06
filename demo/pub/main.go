@@ -37,7 +37,8 @@ func main() {
 
 	logger.Info(os.Environ())
 
-	p := pub.NewPublisher()
+	isLocal := true
+	p := pub.New(isLocal)
 	if p == nil {
 		logger.Error("failed to create a publisher")
 	}
@@ -45,14 +46,24 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		err := p.SIP.SendRegister()
+		err := p.FactoryClient.SendRegister()
 		if err != nil {
 			logger.Error(err)
 		}
 		time.Sleep(3 * time.Second)
 	}()
 
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		topic := "amazingTopic"
+		err := p.FactoryClient.InviteWithTopic(topic)
+		if err != nil {
+			logger.Error(err)
+		}
+	}()
+
 	<-stop
-	p.SIP.Register.SendRegister(0)
+	p.FactoryClient.Register.SendRegister(0)
 	wg.Wait()
 }

@@ -12,6 +12,8 @@ services:
       - PUBLISHER_IP
       - SERVER_SIP_IP
       - SERVER_SIP_PORT
+      - FACTORY_CLIENT_PORT
+      - CONF_FACTORY_PORT
       - SERVER_IP=$SERVER_SIP_IP
       - SERVER_PORT=$SERVER_SIP_PORT
       - SENDER_IP=$PUBLISHER_IP
@@ -26,6 +28,22 @@ services:
         ipv4_address: ${PUBLISHER_IP}
     stdin_open: true
     tty: true
+  
+  server:
+    image: server:latest
+    container_name: server
+    environment:
+      - SERVER_SIP_IP
+      - SERVER_SIP_PORT
+      - CONF_FACTORY_PORT
+      - CLIENT_REST_PORT
+    ports:
+      - "${CONF_FACTORY_PORT}:${CONF_FACTORY_PORT}"
+      - "${SERVER_SIP_PORT}:${SERVER_SIP_PORT}"
+      - "${CLIENT_REST_PORT}:${CLIENT_REST_PORT}"
+    networks:
+      pubsubnet:
+        ipv4_address: ${SERVER_SIP_IP} 
 
 
 networks:

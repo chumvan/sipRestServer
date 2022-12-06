@@ -1,16 +1,26 @@
 package pub
 
 import (
-	SenderSIP "github.com/chumvan/sipRestServer/pkg/senderSIP"
+	SenderSIP "github.com/chumvan/sipRestServer/pkg/SIP/sender"
 )
 
 type Publisher struct {
-	SIP *SenderSIP.SenderSIP
+	FactoryClient *SenderSIP.SenderSIP
+	SIP           *SenderSIP.SenderSIP
 }
 
-func NewPublisher() *Publisher {
-	p := &Publisher{
-		SIP: SenderSIP.NewSenderSIPclient(),
+func New(isLocal bool) *Publisher {
+	if isLocal {
+		p := &Publisher{
+			FactoryClient: SenderSIP.NewSenderSIPclient("local-factory"),
+			SIP:           SenderSIP.NewSenderSIPclient("local-server"),
+		}
+		return p
+	} else {
+		p := &Publisher{
+			FactoryClient: SenderSIP.NewSenderSIPclient("factory"),
+			SIP:           SenderSIP.NewSenderSIPclient("server"),
+		}
+		return p
 	}
-	return p
 }

@@ -1,12 +1,14 @@
 package SenderSIP
 
 import (
+	"fmt"
 	"net"
 	"os"
 	"strconv"
+	"strings"
 
-	"github.com/chumvan/go-sip-ua/examples/mock"
 	"github.com/chumvan/go-sip-ua/pkg/utils"
+	"github.com/chumvan/sipRestServer/src/mock"
 	"github.com/cloudwebrtc/go-sip-ua/pkg/account"
 	"github.com/cloudwebrtc/go-sip-ua/pkg/session"
 	"github.com/cloudwebrtc/go-sip-ua/pkg/stack"
@@ -35,11 +37,14 @@ type SenderSIP struct {
 	targetChan chan string
 	Recipient  sip.SipUri
 
+	serverIP   string
+	serverPort int
+
 	Profile  *account.Profile
 	Register *ua.Register
 }
 
-func NewSenderSIPclient() (s *SenderSIP) {
+func NewSenderSIPclient(useFor string) (s *SenderSIP) {
 	s = &SenderSIP{}
 	senderIPstr, ok := os.LookupEnv("SENDER_IP")
 	if !ok {
@@ -48,6 +53,13 @@ func NewSenderSIPclient() (s *SenderSIP) {
 	senderPortStr, ok := os.LookupEnv("SENDER_PORT")
 	if !ok {
 		logger.Error("senderPort param not found")
+	}
+	// over write factoryClientPort this is a factoryClient
+	if strings.Contains(useFor, "factory") {
+		senderPortStr, ok = os.LookupEnv("FACTORY_CLIENT_PORT")
+		if !ok {
+			logger.Error("factoryClientPort param not found")
+		}
 	}
 	senderPort, err := strconv.Atoi(senderPortStr)
 	if err != nil {
@@ -136,19 +148,39 @@ func NewSenderSIPclient() (s *SenderSIP) {
 		s.Stack)
 
 	// A recipient = SIP server
-	serverIP, ok := os.LookupEnv("SERVER_IP")
+	var serverIP string
+	serverIP, ok = os.LookupEnv("SERVER_IP")
 	if !ok {
 		logger.Error("serverIP param not found")
 	}
-	serverPort, ok := os.LookupEnv("SERVER_PORT")
-	if !ok {
-		logger.Error("serverPort param not found")
+
+	var serverPort string
+	if useFor == "factory" || useFor == "local-factory" {
+		serverPort, ok = os.LookupEnv("CONF_FACTORY_PORT")
+		if !ok {
+			logger.Error("confFactoryPort param not found")
+		}
+	} else if useFor == "server" || useFor == "local-server" {
+		serverPort, ok = os.LookupEnv("SERVER_PORT")
+		if !ok {
+			logger.Error("serverPort param not found")
+		}
+	} else {
+		logger.Error("unknown value of useFor")
 	}
+
 	sipUriString := "sip" + ":" +
-		senderName + "@" + serverIP + ":" +
+		"server" + "@" + serverIP + ":" +
 		serverPort + ";" +
 		"transport=udp"
+
 	s.Recipient, err = parser.ParseSipUri(sipUriString)
+	if err != nil {
+		logger.Error(err)
+	}
+
+	s.serverIP = serverIP
+	s.serverPort, err = strconv.Atoi(serverPort)
 	if err != nil {
 		logger.Error(err)
 	}
@@ -158,5 +190,19 @@ func NewSenderSIPclient() (s *SenderSIP) {
 
 func (s *SenderSIP) SendRegister() (err error) {
 	s.Register, err = s.UA.SendRegister(s.Profile, s.Recipient, s.Profile.Expires, nil)
+	return
+}
+
+func (s *SenderSIP) InviteWithTopic(topic string) (err error) {
+
+	factoryUri, _ := parser.ParseUri(fmt.Sprintf("sip:server@%s", s.serverIP))
+
+	factoryRecipient, err := parser.ParseSipUri(fmt.Sprintf("sip:server@%s:%d;transport=udp", s.serverIP, s.serverPort))
+	if err != nil {
+		logger.Error(err)
+	}
+
+	sdp := mock.BuildInviteWithTopic(s.UDPAddress, topic)
+	_, err = s.UA.Invite(s.Profile, factoryUri, factoryRecipient, &sdp)
 	return
 }
