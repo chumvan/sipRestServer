@@ -39,6 +39,8 @@ services:
       - CLIENT_REST_PORT
       - FORWARDER_IP
       - FORWARDER_RTP_IN_PORT
+      - DB_IP
+      - DB_PORT
     ports:
       - "${CONF_FACTORY_PORT}:${CONF_FACTORY_PORT}"
       - "${SERVER_SIP_PORT}:${SERVER_SIP_PORT}"

@@ -41,10 +41,10 @@ func BuildInviteWithTopic(addr *net.UDPAddr, topic string) string {
 				Format: []*sdp.Format{
 					{Payload: 100, Name: "t140", ClockRate: 1000},
 				},
-				Attributes: []*sdp.Attr{
-					sdp.NewAttr("topic", topic),
-				},
 			},
+		},
+		Attributes: []*sdp.Attr{
+			sdp.NewAttr("topic", topic),
 		},
 	}
 

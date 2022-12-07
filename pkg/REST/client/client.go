@@ -16,7 +16,7 @@ var (
 )
 
 func init() {
-	logger = utils.NewLogrusLogger(log.InfoLevel, "Conference Factory", nil)
+	logger = utils.NewLogrusLogger(log.InfoLevel, "REST-Client", nil)
 }
 
 type ClientREST struct {
@@ -26,19 +26,20 @@ type ClientREST struct {
 	ChanTopic chan string
 }
 
-func NewClientREST(to *net.TCPAddr) (cr *ClientREST, err error) {
+func New(to *net.TCPAddr) (cr *ClientREST) {
 	cr = &ClientREST{
 		ToIPAddr: *to,
 	}
 	toUrl, err := url.Parse(fmt.Sprintf("http://%s:%d", to.IP, to.Port))
 	if err != nil {
-		return nil, err
+		return nil
 	}
 	cr.ToURL = *toUrl
 	cr.client = http.Client{Timeout: time.Duration(1) * time.Second}
-	return cr, nil
+	cr.ChanTopic = make(chan string, 1)
+	return cr
 }
 
 func (cr *ClientREST) CreateTopic(topic string) {
-	logger.Infof("received topic: %s", topic)
+	logger.Debugf("received topic: %v", topic)
 }

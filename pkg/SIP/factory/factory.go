@@ -32,8 +32,9 @@ func init() {
 	logger = utils.NewLogrusLogger(log.InfoLevel, "Conference Factory", nil)
 }
 
-func NewConfFactory() *ConfFactory {
+func New() *ConfFactory {
 	cf := &ConfFactory{}
+	cf.ChanTopic = make(chan string, 1)
 
 	stack := stack.NewSipStack(&stack.SipStackConfig{
 		UserAgent:  "Conference Factory",
@@ -81,14 +82,14 @@ func NewConfFactory() *ConfFactory {
 		switch state {
 		// Handle incoming call.
 		case session.InviteReceived:
-			to, _ := (*req).To()
-			from, _ := (*req).From()
-			caller := from.Address
-			called := to.Address
+			// to, _ := (*req).To()
+			// from, _ := (*req).From()
+			// // caller := from.Address
+			// called := to.Address
 
 			offer := sess.RemoteSdp()
 
-			logger.Infof("from: %v to: %v \nsdp: %v", caller, called, offer)
+			// logger.Infof("from: %v to: %v \nsdp: %v", caller, called, offer)
 			// append an attribute to send back a conference URI
 			tempSessDesc, err := sdp.ParseString(offer)
 			if err != nil {
@@ -96,6 +97,7 @@ func NewConfFactory() *ConfFactory {
 			}
 
 			topicName := tempSessDesc.Attributes.Get("topic")
+			// logger.Infof("topic name: %s", topicName)
 			cf.ChanTopic <- topicName
 
 			confUri := fmt.Sprintf("sip:%s@%s:%d;transport=udp", topicName, factoryIP, factoryPort)
