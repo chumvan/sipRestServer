@@ -4,6 +4,10 @@ services:
   publisher:
     image: pub:latest
     container_name: publisher
+    depends_on:
+      - postgresDB
+      - confTopicMapper
+      - server
     environment:
       - PUBLISHER_RTP_PORT
       - PUBLISHER_SIP_PORT
@@ -32,6 +36,9 @@ services:
   server:
     image: server:latest
     container_name: server
+    depends_on:
+      - postgresDB
+      - confTopicMapper
     environment:
       - SERVER_SIP_IP
       - SERVER_SIP_PORT
@@ -39,8 +46,8 @@ services:
       - CLIENT_REST_PORT
       - FORWARDER_IP
       - FORWARDER_RTP_IN_PORT
-      - DB_IP
-      - DB_PORT
+      - CONF_TOPIC_MAPPER_IP
+      - CONF_TOPIC_MAPPER_PORT
     ports:
       - "${CONF_FACTORY_PORT}:${CONF_FACTORY_PORT}"
       - "${SERVER_SIP_PORT}:${SERVER_SIP_PORT}"
@@ -48,6 +55,41 @@ services:
     networks:
       pubsubnet:
         ipv4_address: ${SERVER_SIP_IP} 
+
+  postgresDB:
+    image: postgres
+    container_name:  postgresDB
+    restart: always
+    environment:
+      - POSTGRES_IP
+      - POSTGRES_PORT
+      - POSTGRES_PASSWORD=password
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      pubsubnet:
+        ipv4_address: ${POSTGRES_IP}
+    
+  
+  confTopicMapper:
+    image: confdb:latest
+    container_name: confTopicMapper
+    depends_on:
+      - postgresDB
+    restart: on-failure
+    environment:
+      - FORWARDER_IP
+      - FORWARDER_RTP_IN_PORT
+      - CONF_TOPIC_MAPPER_IP
+      - CONF_TOPIC_MAPPER_PORT
+      - DB_HOST=postgresDB
+    ports:
+      - "${CONF_TOPIC_MAPPER_PORT}:${CONF_TOPIC_MAPPER_PORT}"
+    networks:
+      pubsubnet:
+        ipv4_address: $CONF_TOPIC_MAPPER_IP
 
 
 networks:
@@ -58,3 +100,6 @@ networks:
       config:
         - subnet: ${SUBNET}
           gateway: ${GATEWAY}
+
+volumes:
+  postgres_data:

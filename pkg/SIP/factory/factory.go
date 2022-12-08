@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"strconv"
 
 	"github.com/chumvan/go-sip-ua/pkg/utils"
+	"github.com/chumvan/sipRestServer/pkg/topic"
 	"github.com/cloudwebrtc/go-sip-ua/pkg/account"
 	"github.com/cloudwebrtc/go-sip-ua/pkg/session"
 	"github.com/cloudwebrtc/go-sip-ua/pkg/stack"
@@ -21,7 +21,8 @@ type ConfFactory struct {
 	UDPAddress *net.UDPAddr
 	Stack      *stack.SipStack
 	UA         *ua.UserAgent
-	ChanTopic  chan string
+	ChanMeta   chan topic.TopicMeta
+	ChanInfo   chan topic.TopicInfo
 }
 
 var (
@@ -34,7 +35,8 @@ func init() {
 
 func New() *ConfFactory {
 	cf := &ConfFactory{}
-	cf.ChanTopic = make(chan string, 1)
+	cf.ChanMeta = make(chan topic.TopicMeta, 1)
+	cf.ChanInfo = make(chan topic.TopicInfo, 1)
 
 	stack := stack.NewSipStack(&stack.SipStackConfig{
 		UserAgent:  "Conference Factory",
@@ -48,19 +50,19 @@ func New() *ConfFactory {
 	if err != nil {
 		logger.Error(err)
 	}
-	factoryIP, ok := os.LookupEnv("SERVER_SIP_IP")
-	if !ok {
-		logger.Error("serverSipIP param not found")
-	}
+	// factoryIP, ok := os.LookupEnv("SERVER_SIP_IP")
+	// if !ok {
+	// 	logger.Error("serverSipIP param not found")
+	// }
 
 	confFactoryPortStr, ok := os.LookupEnv("CONF_FACTORY_PORT")
 	if !ok {
 		logger.Error("confFactoryPort param not found")
 	}
-	factoryPort, err := strconv.Atoi(confFactoryPortStr)
-	if err != nil {
-		logger.Error(err)
-	}
+	// factoryPort, err := strconv.Atoi(confFactoryPortStr)
+	// if err != nil {
+	// 	logger.Error(err)
+	// }
 
 	listen := fmt.Sprint(localIP) + ":" + confFactoryPortStr
 	cf.UDPAddress, err = net.ResolveUDPAddr("udp", listen)
@@ -83,8 +85,8 @@ func New() *ConfFactory {
 		// Handle incoming call.
 		case session.InviteReceived:
 			// to, _ := (*req).To()
-			// from, _ := (*req).From()
-			// // caller := from.Address
+			from, _ := (*req).From()
+			caller := from.Address
 			// called := to.Address
 
 			offer := sess.RemoteSdp()
@@ -97,16 +99,25 @@ func New() *ConfFactory {
 			}
 
 			topicName := tempSessDesc.Attributes.Get("topic")
-			// logger.Infof("topic name: %s", topicName)
-			cf.ChanTopic <- topicName
-
-			confUri := fmt.Sprintf("sip:%s@%s:%d;transport=udp", topicName, factoryIP, factoryPort)
-			forwarderIP := os.Getenv("FORWARDER_IP")
-			forwarderRtpInPort := os.Getenv("FORWARDER_RTP_IN_PORT")
+			logger.Infof("topic name: %s", topicName)
+			topicMeta := topic.TopicMeta{
+				Topic:         topicName,
+				CreatorSipUri: caller,
+			}
+			logger.Infof("topic meta: %s", topicMeta)
+			cf.ChanMeta <- topicMeta
+			topicInfo := <-cf.ChanInfo
+			logger.Infof("topic info: %s", topicInfo)
+			// // to be removed if can pass topicInfo
+			// confUri := fmt.Sprintf("sip:%s@%s:%d;transport=udp", topicName, factoryIP, factoryPort)
+			// forwarderIP := os.Getenv("FORWARDER_IP")
+			// forwarderRtpInPort := os.Getenv("FORWARDER_RTP_IN_PORT")
+			// // end of to be removed
 			tempSessDesc.Attributes = append(tempSessDesc.Attributes,
-				sdp.NewAttr("confUri", confUri),
-				sdp.NewAttr("topicIP", forwarderIP),
-				sdp.NewAttr("topicPort", forwarderRtpInPort))
+				sdp.NewAttr("confUri", topicInfo.ConfUri),
+				sdp.NewAttr("topicIP", topicInfo.TopicIP),
+				sdp.NewAttr("topicPort", topicInfo.TopicPort))
+			tempSessDesc.Origin.Address = topicInfo.TopicIP
 			answer := tempSessDesc.String()
 			sess.ProvideAnswer(answer)
 			sess.Accept(200)

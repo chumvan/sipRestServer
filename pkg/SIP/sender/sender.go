@@ -113,16 +113,17 @@ func NewSenderSIPclient(useFor string) (s *SenderSIP) {
 				logger.Error(err)
 			}
 			s.targetIP = sessionDesc.Origin.UnicastAddress
-			logger.Debugf("targetIP = %s", s.targetIP)
+			logger.Debugf("forwarder IP: %s", s.targetIP)
 			// pass the target's (forwarder's) IP for data transferring
 			s.targetChan <- s.targetIP
 
 			confUri, _ := sessionDesc.Attribute("confUri")
 			topicIP, _ := sessionDesc.Attribute("topicIP")
 			topicPort, _ := sessionDesc.Attribute("topicPort")
-			logger.Infof(`conference uri: %s
-						topicIP: %s
-						topicPort: %s`,
+			logger.Infof(`confirmed conference with:
+					 		conference uri: %s
+							at topic IP: %s
+							at topic Port: %s`,
 				confUri,
 				topicIP,
 				topicPort)

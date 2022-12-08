@@ -25,6 +25,4 @@ EXPOSE 8000
 
 RUN chmod +x server.exe
 
-RUN apk add bash
-
 CMD [ "./server.exe" ]

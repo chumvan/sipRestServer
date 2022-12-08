@@ -21,13 +21,13 @@ func New() *Server {
 	if f == nil {
 		return nil
 	}
-	toIP := os.Getenv("DB_IP")
-	toPort, _ := strconv.Atoi(os.Getenv("DB_PORT"))
-	to := &net.TCPAddr{
-		IP:   net.IP(toIP),
-		Port: toPort,
+	restServerIP := os.Getenv("CONF_TOPIC_MAPPER_IP")
+	restServerPort, _ := strconv.Atoi(os.Getenv("CONF_TOPIC_MAPPER_PORT"))
+	restServerAddr := &net.TCPAddr{
+		IP:   net.ParseIP(restServerIP),
+		Port: restServerPort,
 	}
-	r := clientREST.New(to)
+	r := clientREST.New(restServerAddr, f.UDPAddress)
 	if r == nil {
 		return nil
 	}

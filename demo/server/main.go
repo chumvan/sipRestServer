@@ -29,10 +29,30 @@ func main() {
 	go func() {
 		defer wg.Done()
 		for {
-			topic, ok := <-s.Factory.ChanTopic
+			topicMeta, ok := <-s.Factory.ChanMeta
 			if ok {
-				s.REST.CreateTopic(topic)
+				logger.Infof("topic meta: %s", topicMeta)
+				s.REST.CreateTopic(topicMeta, s.Factory.ChanInfo)
 				break
+			} else {
+				logger.Error("no topic meta returned")
+				break
+			}
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			topicInfo, ok := <-s.Factory.ChanInfo
+			if ok {
+				logger.Infof("topic info: %s", topicInfo)
+				// pass to topicInfo channel of the factory
+				s.Factory.ChanInfo <- topicInfo
+				break
+			} else {
+				logger.Error("No topic info return")
 			}
 		}
 	}()

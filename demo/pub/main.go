@@ -56,6 +56,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		time.Sleep(5 * time.Second)
 		topic := "amazingTopic"
 		err := p.FactoryClient.InviteWithTopic(topic)
 		if err != nil {
