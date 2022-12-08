@@ -71,7 +71,7 @@ services:
     networks:
       pubsubnet:
         ipv4_address: ${POSTGRES_IP}
-    
+  
   
   confTopicMapper:
     image: confdb:latest

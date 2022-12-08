@@ -1,4 +1,4 @@
-package SenderSIP
+package senderSIP
 
 import (
 	"fmt"
@@ -33,8 +33,9 @@ type SenderSIP struct {
 	UA    *ua.UserAgent
 	Stack *stack.SipStack
 
-	targetIP   string
-	targetChan chan string
+	TargetIP   string
+	TargetChan chan string
+	TargetPort int
 	Recipient  sip.SipUri
 
 	serverIP   string
@@ -92,7 +93,7 @@ func NewSenderSIPclient(useFor string) (s *SenderSIP) {
 		SipStack: s.Stack,
 	})
 
-	s.targetChan = make(chan string, 1)
+	s.TargetChan = make(chan string, 1)
 
 	s.UA.InviteStateHandler = func(sess *session.Session, req *sip.Request, resp *sip.Response, state session.Status) {
 		logger.Infof("InviteStateHandler: state => %v, type => %s", state, sess.Direction())
@@ -112,10 +113,6 @@ func NewSenderSIPclient(useFor string) (s *SenderSIP) {
 			if err != nil {
 				logger.Error(err)
 			}
-			s.targetIP = sessionDesc.Origin.UnicastAddress
-			logger.Debugf("forwarder IP: %s", s.targetIP)
-			// pass the target's (forwarder's) IP for data transferring
-			s.targetChan <- s.targetIP
 
 			confUri, _ := sessionDesc.Attribute("confUri")
 			topicIP, _ := sessionDesc.Attribute("topicIP")
@@ -127,6 +124,15 @@ func NewSenderSIPclient(useFor string) (s *SenderSIP) {
 				confUri,
 				topicIP,
 				topicPort)
+
+			s.TargetIP = topicIP
+			s.TargetPort, err = strconv.Atoi(topicPort)
+			if err != nil {
+				logger.Error(err)
+			}
+			// pass the target's (forwarder's) IP for data transferring
+			out := topicIP + ":" + topicPort
+			s.TargetChan <- out
 
 		case session.Canceled:
 			fallthrough

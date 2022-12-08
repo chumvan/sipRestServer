@@ -1,25 +1,47 @@
 package pub
 
 import (
-	SenderSIP "github.com/chumvan/sipRestServer/pkg/SIP/sender"
+	"net"
+	"os"
+	"strconv"
+
+	sender "github.com/chumvan/rtp/sender"
+	senderSIP "github.com/chumvan/sipRestServer/pkg/SIP/sender"
 )
 
 type Publisher struct {
-	FactoryClient *SenderSIP.SenderSIP
-	SIP           *SenderSIP.SenderSIP
+	FactoryClient *senderSIP.SenderSIP
+	SIP           *senderSIP.SenderSIP
+	RTP           *sender.Sender
+	RTPAddr       *net.UDPAddr
 }
 
 func New(isLocal bool) *Publisher {
+	pubIP := net.ParseIP(os.Getenv("PUBLISHER_IP"))
+	pubRtpPortStr := os.Getenv("PUBLISHER_RTP_PORT")
+	pubRtpPort, err := strconv.Atoi(pubRtpPortStr)
+	if err != nil {
+		return nil
+	}
+	rtpAddr := &net.UDPAddr{
+		IP:   pubIP,
+		Port: pubRtpPort,
+	}
+
 	if isLocal {
 		p := &Publisher{
-			FactoryClient: SenderSIP.NewSenderSIPclient("local-factory"),
-			SIP:           SenderSIP.NewSenderSIPclient("local-server"),
+			FactoryClient: senderSIP.NewSenderSIPclient("local-factory"),
+			SIP:           senderSIP.NewSenderSIPclient("local-server"),
+			RTP:           &sender.Sender{},
+			RTPAddr:       rtpAddr,
 		}
 		return p
 	} else {
 		p := &Publisher{
-			FactoryClient: SenderSIP.NewSenderSIPclient("factory"),
-			SIP:           SenderSIP.NewSenderSIPclient("server"),
+			FactoryClient: senderSIP.NewSenderSIPclient("factory"),
+			SIP:           senderSIP.NewSenderSIPclient("server"),
+			RTP:           &sender.Sender{},
+			RTPAddr:       rtpAddr,
 		}
 		return p
 	}
