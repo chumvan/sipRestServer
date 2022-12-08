@@ -21,6 +21,7 @@ require (
 	cloud.google.com/go/iam v0.3.0 // indirect
 	cloud.google.com/go/storage v1.27.0 // indirect
 	firebase.google.com/go v3.13.0+incompatible // indirect
+	github.com/chumvan/forwarder-rest-server v0.0.0-20221125090601-66421a6cfb78
 	github.com/discoviking/fsm v0.0.0-20150126104936-f4a273feecca // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.8.1 // indirect

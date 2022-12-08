@@ -89,7 +89,34 @@ services:
       - "${CONF_TOPIC_MAPPER_PORT}:${CONF_TOPIC_MAPPER_PORT}"
     networks:
       pubsubnet:
-        ipv4_address: $CONF_TOPIC_MAPPER_IP
+        ipv4_address: $CONF_TOPIC_MAPPER_IP 
+
+  topic:
+    image: topic:latest
+    container_name: topic
+    depends_on:
+      - confTopicMapper
+      - server
+    restart: on-failure
+    environment:
+      - FORWARDER_IP
+      - FORWARDER_RTP_IN_PORT
+      - FORWARDER_RTP_OUT_PORT
+      - FORWARDER_REST_PORT
+      - SUBSCRIBER1_IP
+      - SUBSCRIBER1_RTP_PORT
+      - SUBSCRIBER2_IP
+      - SUBSCRIBER2_RTP_PORT
+      - SUBSCRIBER3_IP
+      - SUBSCRIBER3_RTP_PORT
+    ports:
+      - ${FORWARDER_REST_PORT}:${FORWARDER_REST_PORT}
+      - ${FORWARDER_RTP_IN_PORT}:${FORWARDER_RTP_IN_PORT}
+      - ${FORWARDER_RTP_OUT_PORT}:${FORWARDER_RTP_OUT_PORT}
+    networks:
+      pubsubnet:
+        ipv4_address: $FORWARDER_IP    
+
 
 
 networks:

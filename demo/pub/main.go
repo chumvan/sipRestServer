@@ -102,7 +102,9 @@ func main() {
 					logger.Error(err)
 				}
 
+				// wg.Add(1)
 				go func() {
+					// defer wg.Done()
 					for {
 						select {
 						case <-done:
@@ -111,17 +113,17 @@ func main() {
 						case t := <-ticker.C:
 							payload, err := scraper.Scrape()
 							if err != nil {
-								panic(err)
+								logger.Error(err)
 							}
 							packets := packetizer.Packetize(payload, 1)
 
 							for _, p := range packets {
 								rawBuf, err := p.Marshal()
 								if err != nil {
-									panic(err)
+									logger.Error(err)
 								}
 								publisher.RTP.Send(rawBuf)
-								fmt.Println("packet sent at: ", t)
+								logger.Infof("packet sent at: ", t)
 							}
 						}
 					}

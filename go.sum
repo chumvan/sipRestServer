@@ -78,6 +78,8 @@ github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghf
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/chumvan/confdb v0.0.2 h1:RxdWKTiKZGaUMADmNXiNaNdwQTd0QacUYhZhjlByeew=
 github.com/chumvan/confdb v0.0.2/go.mod h1:xfwQlhwGbB639lXY0R717CZP1W0ird49OHIjF2prmJ0=
+github.com/chumvan/forwarder-rest-server v0.0.0-20221125090601-66421a6cfb78 h1:ygQQLvhRrD2GpULyYa12yZriljWbf8ISUqJF6oWaoKU=
+github.com/chumvan/forwarder-rest-server v0.0.0-20221125090601-66421a6cfb78/go.mod h1:NqeJUXODKJeApYjVpBEaDucY2I706dbMu3wuYjcnynM=
 github.com/chumvan/go-sip-ua v0.0.0-20221128141357-0b15737629aa h1:k2X0bct0Lakg1b93s1KpTsRuxqpMcV0ocbZTNxwwNqc=
 github.com/chumvan/go-sip-ua v0.0.0-20221128141357-0b15737629aa/go.mod h1:5Zy+QlORbp7rEzHZuHXo7a5MegpAuKIdAoRh38Bo/Pc=
 github.com/chumvan/rtp v0.0.1 h1:eiLhc8GR3AbiIVo0AFV8X9hYpxSC/sreDAzzZvKdxY0=

@@ -1,0 +1,28 @@
+# Build
+FROM golang:1.19-alpine AS build
+
+WORKDIR /app
+
+COPY go.mod ./
+COPY go.sum ./
+
+RUN go mod download
+
+COPY ./ ./
+
+RUN go build -o /app/topic.exe ./demo/topic/main.go
+
+# Deploy
+FROM alpine
+
+WORKDIR /app
+
+COPY --from=build /app/topic.exe ./topic.exe
+
+EXPOSE 6430
+EXPOSE 5060
+EXPOSE 8060
+
+RUN chmod +x topic.exe
+
+CMD [ "./topic.exe" ]
