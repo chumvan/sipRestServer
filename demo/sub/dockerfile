@@ -1,0 +1,28 @@
+# Build
+FROM golang:1.19-alpine AS build
+
+WORKDIR /app
+
+COPY go.mod ./
+COPY go.sum ./
+
+RUN go mod download
+
+COPY ./ ./
+
+RUN go build -o /app/subscriber.exe ./demo/sub/main.go
+
+# Deploy
+FROM alpine
+
+WORKDIR /app
+
+COPY --from=build /app/subscriber.exe ./subscriber.exe
+
+EXPOSE 6658
+EXPOSE 6420
+EXPOSE 5060
+
+RUN chmod +x subscriber.exe
+
+CMD [ "./subscriber.exe" ]

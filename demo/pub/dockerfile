@@ -19,12 +19,9 @@ WORKDIR /app
 
 COPY --from=build /app/publisher.exe ./publisher.exe
 
-EXPOSE 6658
-EXPOSE 6420
-EXPOSE 5060
+EXPOSE 6421
+EXPOSE 5071
 
 RUN chmod +x publisher.exe
-
-RUN apk add bash
 
 CMD [ "./publisher.exe" ]

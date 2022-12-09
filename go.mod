@@ -3,15 +3,35 @@ module github.com/chumvan/sipRestServer
 go 1.18
 
 require (
-	github.com/chumvan/confdb v0.0.2
+	github.com/chumvan/confdb v0.0.3-0.20221209122912-f19823c6b3e2
 	github.com/chumvan/go-sip-ua v0.0.0-20221128141357-0b15737629aa
-	github.com/chumvan/rtp v0.0.1
+	github.com/chumvan/rtp v0.0.2
 	github.com/chumvan/t140 v0.0.0-20220727105626-13370cefc7de
 	github.com/cloudwebrtc/go-sip-ua v1.1.6
 	github.com/ghettovoice/gosip v0.0.0-20221205103558-9ce75dd36bd2
 	github.com/pion/rtp v1.7.13
 	github.com/pion/sdp v1.3.0
 	github.com/pixelbender/go-sdp v1.1.0
+)
+
+require (
+	github.com/cisco/senml v0.0.0-20201020223705-2228869e3bde // indirect
+	github.com/deepmap/oapi-codegen v1.8.2 // indirect
+	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/influxdata/influxdb-client-go/v2 v2.11.0 // indirect
+	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 // indirect
+	github.com/magiconair/properties v1.8.6 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/pelletier/go-toml v1.9.5 // indirect
+	github.com/spf13/afero v1.8.2 // indirect
+	github.com/spf13/cast v1.5.0 // indirect
+	github.com/spf13/jwalterweatherman v1.1.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/viper v1.13.0 // indirect
+	github.com/subosito/gotenv v1.4.1 // indirect
+	gopkg.in/ini.v1 v1.67.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
@@ -81,5 +101,5 @@ require (
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/postgres v1.4.5 // indirect
-	gorm.io/gorm v1.24.1 // indirect
+	gorm.io/gorm v1.24.2 // indirect
 )

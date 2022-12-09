@@ -29,20 +29,20 @@ func New(isLocal bool) *Publisher {
 	}
 
 	if isLocal {
-		p := &Publisher{
+		pub := &Publisher{
 			FactoryClient: senderSIP.NewSenderSIPclient("local-factory"),
 			SIP:           senderSIP.NewSenderSIPclient("local-server"),
 			RTP:           &sender.Sender{},
 			RTPAddr:       rtpAddr,
 		}
-		return p
+		return pub
 	} else {
-		p := &Publisher{
+		pub := &Publisher{
 			FactoryClient: senderSIP.NewSenderSIPclient("factory"),
 			SIP:           senderSIP.NewSenderSIPclient("server"),
 			RTP:           &sender.Sender{},
 			RTPAddr:       rtpAddr,
 		}
-		return p
+		return pub
 	}
 }

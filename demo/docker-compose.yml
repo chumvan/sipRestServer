@@ -46,6 +46,7 @@ services:
       - CLIENT_REST_PORT
       - FORWARDER_IP
       - FORWARDER_RTP_IN_PORT
+      - FORWARDER_REST_PORT
       - CONF_TOPIC_MAPPER_IP
       - CONF_TOPIC_MAPPER_PORT
     ports:
@@ -82,6 +83,7 @@ services:
     environment:
       - FORWARDER_IP
       - FORWARDER_RTP_IN_PORT
+      - FORWARDER_REST_PORT
       - CONF_TOPIC_MAPPER_IP
       - CONF_TOPIC_MAPPER_PORT
       - DB_HOST=postgresDB
@@ -115,8 +117,77 @@ services:
       - ${FORWARDER_RTP_OUT_PORT}:${FORWARDER_RTP_OUT_PORT}
     networks:
       pubsubnet:
-        ipv4_address: $FORWARDER_IP    
+        ipv4_address: $FORWARDER_IP
 
+  sub1:
+    image: sub:latest
+    container_name: sub1
+    depends_on:
+      - topic
+      - publisher
+      - server
+    environment:
+      - SUBSCRIBER1_IP
+      - SUBSCRIBER1_RTP_PORT
+      - SUBSCRIBER1_SIP_PORT
+      - CONF_TOPIC_MAPPER_IP
+      - CONF_TOPIC_MAPPER_PORT
+      - SUB_IP=${SUBSCRIBER1_IP}
+      - SUB_RTP_PORT=${SUBSCRIBER1_RTP_PORT}
+      - SUB_SIP_PORT=${SUBSCRIBER1_SIP_PORT}
+    ports:
+      - ${SUBSCRIBER1_RTP_PORT}:${SUBSCRIBER1_RTP_PORT}
+      - ${SUBSCRIBER1_SIP_PORT}:${SUBSCRIBER1_SIP_PORT} 
+    networks:
+      pubsubnet:
+        ipv4_address: $SUBSCRIBER1_IP
+
+  sub2:
+    image: sub:latest
+    container_name: sub2
+    depends_on:
+      - topic
+      - publisher
+      - server
+    environment:
+      - SUBSCRIBER2_IP
+      - SUBSCRIBER2_RTP_PORT
+      - SUBSCRIBER2_SIP_PORT
+      - CONF_TOPIC_MAPPER_IP
+      - CONF_TOPIC_MAPPER_PORT
+      - SUB_IP=${SUBSCRIBER2_IP}
+      - SUB_RTP_PORT=${SUBSCRIBER2_RTP_PORT}
+      - SUB_SIP_PORT=${SUBSCRIBER2_SIP_PORT}
+    ports:
+      - ${SUBSCRIBER2_RTP_PORT}:${SUBSCRIBER2_RTP_PORT}
+      - ${SUBSCRIBER2_SIP_PORT}:${SUBSCRIBER2_SIP_PORT} 
+    networks:
+      pubsubnet:
+        ipv4_address: $SUBSCRIBER2_IP
+
+  sub3:
+    image: sub:latest
+    container_name: sub3
+    depends_on:
+      - topic
+      - publisher
+      - server
+    environment:
+      - SUBSCRIBER3_IP
+      - SUBSCRIBER3_RTP_PORT
+      - SUBSCRIBER3_SIP_PORT
+      - CONF_TOPIC_MAPPER_IP
+      - CONF_TOPIC_MAPPER_PORT
+      - SUB_IP=${SUBSCRIBER3_IP}
+      - SUB_RTP_PORT=${SUBSCRIBER3_RTP_PORT}
+      - SUB_SIP_PORT=${SUBSCRIBER3_SIP_PORT}
+    ports:
+      - ${SUBSCRIBER3_RTP_PORT}:${SUBSCRIBER3_RTP_PORT} 
+      - ${SUBSCRIBER3_SIP_PORT}:${SUBSCRIBER3_SIP_PORT} 
+    networks:
+      pubsubnet:
+        ipv4_address: $SUBSCRIBER3_IP
+   
 
 
 networks:

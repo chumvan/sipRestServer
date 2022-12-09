@@ -23,7 +23,7 @@ var (
 )
 
 func init() {
-	logger = utils.NewLogrusLogger(log.DebugLevel, "SIP-UA-Sender", nil)
+	logger = utils.NewLogrusLogger(log.DebugLevel, "UE-PUBLISHER", nil)
 }
 
 func main() {

@@ -50,8 +50,8 @@ func main() {
 	}
 
 	addrChan := make(chan []net.UDPAddr, 1)
-	defaultAddrs := getSubDefaultAddrs()
-	addrChan <- defaultAddrs
+	// defaultAddrs := getSubDefaultAddrs()
+	// addrChan <- defaultAddrs[:2]
 	wg := new(sync.WaitGroup)
 
 	// REST server to update address
@@ -61,8 +61,10 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		restIP := os.Getenv("FORWADER_REST_PORT")
-		r.Run(fmt.Sprintf(":%s", restIP))
+		restPort := os.Getenv("FORWARDER_REST_PORT")
+		addr := fmt.Sprintf("%s:%s", topicIP, restPort)
+		logger.Infof("topic REST addr: %s", addr)
+		r.Run(addr)
 	}()
 
 	wg.Add(1)
@@ -70,6 +72,7 @@ func main() {
 		defer wg.Done()
 		for users := range usersChan {
 			udpAddrs := parseUDPAddrsFromUsers(users)
+			logger.Infof("publisher udp addrs: %v", udpAddrs)
 			addrChan <- udpAddrs
 		}
 	}()
@@ -94,30 +97,34 @@ func main() {
 
 }
 
+// parse and channel only subscribers to forward
 func parseUDPAddrsFromUsers(users []model.User) (udpAddrs []net.UDPAddr) {
 	fmt.Println("received users")
 	for _, u := range users {
-		fmt.Printf("full string: %v\n", u)
-		uri, err := parser.ParseSipUri(u.EntityUrl)
-		if err != nil {
-			fmt.Println(err)
+		if u.Role == "subscriber" {
+			fmt.Printf("full string: %v\n", u)
+			uri, err := parser.ParseSipUri(u.EntityUrl)
+			if err != nil {
+				fmt.Println(err)
+			}
+			fmt.Printf("uri: %v", uri)
+			fmt.Printf("user: %s\n", uri.User())
+			host := uri.Host()
+			port := u.PortRTP
+			if err != nil {
+				fmt.Println(err)
+			}
+			fmt.Printf("host: %s\n", host)
+			fmt.Printf("port: %d\n", port)
+			if err != nil {
+				fmt.Println(err)
+			}
+			userAddr := net.UDPAddr{
+				IP:   net.ParseIP(host),
+				Port: port,
+			}
+			udpAddrs = append(udpAddrs, userAddr)
 		}
-		fmt.Printf("user: %s\n", uri.User())
-		host, portStr, err := net.SplitHostPort(uri.Host())
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Printf("host: %s\n", host)
-		fmt.Printf("port: %s\n", portStr)
-		port, err := strconv.Atoi(portStr)
-		if err != nil {
-			fmt.Println(err)
-		}
-		userAddr := net.UDPAddr{
-			IP:   net.ParseIP(host),
-			Port: port,
-		}
-		udpAddrs = append(udpAddrs, userAddr)
 	}
 	return
 }
