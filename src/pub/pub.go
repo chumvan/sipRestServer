@@ -6,12 +6,13 @@ import (
 	"strconv"
 
 	sender "github.com/chumvan/rtp/sender"
-	senderSIP "github.com/chumvan/sipRestServer/pkg/SIP/sender"
+	sipClient "github.com/chumvan/sipRestServer/pkg/SIP/client"
+	factoryClient "github.com/chumvan/sipRestServer/pkg/SIP/factoryClient"
 )
 
 type Publisher struct {
-	FactoryClient *senderSIP.SenderSIP
-	SIP           *senderSIP.SenderSIP
+	FactoryClient *factoryClient.FactoryClient
+	SIP           *sipClient.Client
 	RTP           *sender.Sender
 	RTPAddr       *net.UDPAddr
 }
@@ -30,16 +31,16 @@ func New(isLocal bool) *Publisher {
 
 	if isLocal {
 		pub := &Publisher{
-			FactoryClient: senderSIP.NewSenderSIPclient("local-factory"),
-			SIP:           senderSIP.NewSenderSIPclient("local-server"),
+			FactoryClient: factoryClient.New(),
+			SIP:           sipClient.New(),
 			RTP:           &sender.Sender{},
 			RTPAddr:       rtpAddr,
 		}
 		return pub
 	} else {
 		pub := &Publisher{
-			FactoryClient: senderSIP.NewSenderSIPclient("factory"),
-			SIP:           senderSIP.NewSenderSIPclient("server"),
+			FactoryClient: factoryClient.New(),
+			SIP:           sipClient.New(),
 			RTP:           &sender.Sender{},
 			RTPAddr:       rtpAddr,
 		}
