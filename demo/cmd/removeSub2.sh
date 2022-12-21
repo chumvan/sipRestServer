@@ -1,0 +1,1 @@
+curl --location --request DELETE 'http://localhost:8080/api/v1/topicMode/confInfos/amazingTopic/users/6' | jq
