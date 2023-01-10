@@ -5,12 +5,12 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/chumvan/go-sip-ua/pkg/ua"
 	"github.com/chumvan/go-sip-ua/pkg/utils"
 	"github.com/chumvan/sipRestServer/src/mock"
 	"github.com/cloudwebrtc/go-sip-ua/pkg/account"
 	"github.com/cloudwebrtc/go-sip-ua/pkg/session"
 	"github.com/cloudwebrtc/go-sip-ua/pkg/stack"
-	"github.com/cloudwebrtc/go-sip-ua/pkg/ua"
 	"github.com/ghettovoice/gosip/log"
 	"github.com/ghettovoice/gosip/sip"
 	"github.com/ghettovoice/gosip/sip/parser"
@@ -157,16 +157,16 @@ func New() (s *Client) {
 
 	// A recipient = SIP server
 	var serverIP string
-	serverIP, ok = os.LookupEnv("SERVER_IP")
+	serverIP, ok = os.LookupEnv("SERVER_SIP_IP")
 	if !ok {
-		logger.Error("serverIP param not found")
+		logger.Error("serverSipIP param not found")
 	}
 
 	var serverPort string
 
-	serverPort, ok = os.LookupEnv("SERVER_PORT")
+	serverPort, ok = os.LookupEnv("SERVER_SIP_PORT")
 	if !ok {
-		logger.Error("serverPort param not found")
+		logger.Error("serverSipPort param not found")
 	}
 
 	sipUriString := "sip" + ":" +

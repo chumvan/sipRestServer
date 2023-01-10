@@ -12,7 +12,7 @@ import (
 
 type Server struct {
 	Factory *conffactory.ConfFactory
-	SIP     *serverSIP.ServerSIP
+	SIP     *serverSIP.SIPServer
 	REST    *clientREST.ClientREST
 }
 
